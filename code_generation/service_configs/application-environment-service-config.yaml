@@ -1,0 +1,303 @@
+Service:
+  RegionId: cn-hangzhou
+  DeployType: ros
+  DeployMetadata:
+    ServiceInstanceNameRule:
+      Prefix: {{ software }}
+    SupplierDeployMetadata:
+      ArtifactRelation:
+        'ImageIdPlaceholder':
+          ArtifactId: ${Artifact.{{ software }}Image.ArtifactId}
+          ArtifactVersion: ${Artifact.{{ software }}Image.ArtifactVersion}
+      SupplierTemplateConfigs:
+        - Name: 钉钉推荐架构
+          Url: '../ros_templates/{{ software }}_dingtalk.yaml'
+          PredefinedParameters:
+            - Name: 基础版
+              Type: Normal
+              Parameters:
+                EcsInstanceType: ecs.c6.large
+                SystemDiskCategory: cloud_efficiency
+                SystemDiskSize: 40
+                InstanceCount: 2
+                DBInstanceClass: mysql.n2.large.1
+                DBInstanceStorage: 20
+                DBInstanceStorageType: cloud_essd
+                DBCategory: Basic
+                LoadBalancerSpec: slb.s1.small
+                LoadBalancerBandwidth: 5
+                NatGatewayBandwidth: 2
+                Engine: MySQL
+                EngineVersion: "5.7"
+            - Name: 升级版
+              Type: Normal
+              Parameters:
+                EcsInstanceType: ecs.c6.large
+                SystemDiskCategory: cloud_essd
+                SystemDiskSize: 40
+                InstanceCount: 3
+                DBInstanceClass: rds.mysql.s2.xlarge
+                DBInstanceStorage: 20
+                DBInstanceStorageType: local_ssd
+                DBCategory: HighAvailability
+                LoadBalancerSpec: slb.s3.small
+                LoadBalancerBandwidth: 10
+                NatGatewayBandwidth: 4
+                Engine: MySQL
+                EngineVersion: "5.7"
+            - Name: 高配版
+              Type: Normal
+              Parameters:
+                EcsInstanceType: ecs.c6.large
+                SystemDiskCategory: cloud_essd
+                SystemDiskSize: 40
+                InstanceCount: 4
+                DBInstanceClass: rds.mysql.s3.large
+                DBInstanceStorage: 20
+                DBInstanceStorageType: local_ssd
+                DBCategory: HighAvailability
+                LoadBalancerBandwidth: 8
+                LoadBalancerSpec: slb.s3.large
+                NatGatewayBandwidth: 20
+                Engine: MySQL
+                EngineVersion: "5.7"
+            - Name: 自定义
+              Type: Custom
+              Parameters: {}
+    TemplateConfigs:
+      - Name: ECS单机
+        Url: '../ros_templates/{{ software }}_single_ecs.yaml'
+        AllowedRegions:
+          - cn-hangzhou
+          - cn-shanghai
+          - cn-beijing
+          - cn-shenzhen
+          - cn-zhangjiakou
+          - cn-huhehaote
+          - cn-wulanchabu
+          - cn-nanjing
+          - cn-heyuan
+          - cn-guangzhou
+          - cn-fuzhou
+          - cn-wuhan-lr
+          - cn-chengdu
+          - cn-qingdao
+          - cn-hongkong
+          - ap-northeast-1
+          - ap-northeast-2
+          - ap-southeast-1
+          - ap-southeast-2
+          - ap-southeast-3
+          - ap-southeast-6
+          - ap-southeast-5
+          - ap-south-1
+          - ap-southeast-7
+          - us-east-1
+          - us-west-1
+          - eu-west-1
+          - me-east-1
+          - eu-central-1
+      - Name: 弹性ECS集群
+        Url: '../ros_templates/{{ software }}_elastic_ecs_cluster.yaml'
+        AllowedRegions:
+          - cn-hangzhou
+          - cn-shanghai
+          - cn-beijing
+          - cn-shenzhen
+          - cn-zhangjiakou
+          - cn-huhehaote
+          - cn-wulanchabu
+          - cn-nanjing
+          - cn-heyuan
+          - cn-guangzhou
+          - cn-fuzhou
+          - cn-wuhan-lr
+          - cn-chengdu
+          - cn-qingdao
+          - cn-hongkong
+          - ap-northeast-1
+          - ap-northeast-2
+          - ap-southeast-1
+          - ap-southeast-2
+          - ap-southeast-3
+          - ap-southeast-6
+          - ap-southeast-5
+          - ap-south-1
+          - ap-southeast-7
+          - us-east-1
+          - us-west-1
+          - eu-west-1
+          - me-east-1
+          - eu-central-1
+      - Name: 弹性Web后端环境
+        Url: '../ros_templates/{{ software }}_elastic_web_backend.yaml'
+        AllowedRegions:
+          - cn-hangzhou
+          - cn-shanghai
+          - cn-beijing
+          - cn-shenzhen
+          - cn-zhangjiakou
+          - cn-huhehaote
+          - cn-wulanchabu
+          - cn-nanjing
+          - cn-heyuan
+          - cn-guangzhou
+          - cn-fuzhou
+          - cn-wuhan-lr
+          - cn-chengdu
+          - cn-qingdao
+          - cn-hongkong
+          - ap-northeast-1
+          - ap-northeast-2
+          - ap-southeast-1
+          - ap-southeast-2
+          - ap-southeast-3
+          - ap-southeast-6
+          - ap-southeast-5
+          - ap-south-1
+          - ap-southeast-7
+          - us-east-1
+          - us-west-1
+          - eu-west-1
+          - me-east-1
+          - eu-central-1
+      - Name: 钉钉推荐架构
+        Url: '../ros_templates/{{ software }}_dingtalk.yaml'
+        AllowedRegions:
+          - cn-hangzhou
+          - cn-shanghai
+          - cn-beijing
+          - cn-shenzhen
+          - cn-zhangjiakou
+          - cn-huhehaote
+          - cn-wulanchabu
+          - cn-nanjing
+          - cn-heyuan
+          - cn-guangzhou
+          - cn-fuzhou
+          - cn-wuhan-lr
+          - cn-chengdu
+          - cn-qingdao
+          - cn-hongkong
+          - ap-northeast-1
+          - ap-northeast-2
+          - ap-southeast-1
+          - ap-southeast-2
+          - ap-southeast-3
+          - ap-southeast-6
+          - ap-southeast-5
+          - ap-south-1
+          - ap-southeast-7
+          - us-east-1
+          - us-west-1
+          - eu-west-1
+          - me-east-1
+          - eu-central-1
+        PredefinedParameters:
+          - Name: 基础版
+            Type: Normal
+            Parameters:
+              EcsInstanceType: ecs.c6.large
+              SystemDiskCategory: cloud_efficiency
+              SystemDiskSize: 40
+              InstanceCount: 2
+              DBInstanceClass: mysql.n2.large.1
+              DBInstanceStorage: 20
+              DBInstanceStorageType: cloud_essd
+              DBCategory: Basic
+              LoadBalancerSpec: slb.s1.small
+              LoadBalancerBandwidth: 5
+              NatGatewayBandwidth: 2
+              Engine: MySQL
+              EngineVersion: "5.7"
+          - Name: 升级版
+            Type: Normal
+            Parameters:
+              EcsInstanceType: ecs.c6.large
+              SystemDiskCategory: cloud_essd
+              SystemDiskSize: 40
+              InstanceCount: 3
+              DBInstanceClass: rds.mysql.s2.xlarge
+              DBInstanceStorage: 20
+              DBInstanceStorageType: local_ssd
+              DBCategory: HighAvailability
+              LoadBalancerSpec: slb.s3.small
+              LoadBalancerBandwidth: 10
+              NatGatewayBandwidth: 4
+              Engine: MySQL
+              EngineVersion: "5.7"
+          - Name: 高配版
+            Type: Normal
+            Parameters:
+              EcsInstanceType: ecs.c6.large
+              SystemDiskCategory: cloud_essd
+              SystemDiskSize: 40
+              InstanceCount: 4
+              DBInstanceClass: rds.mysql.s3.large
+              DBInstanceStorage: 20
+              DBInstanceStorageType: local_ssd
+              DBCategory: HighAvailability
+              LoadBalancerBandwidth: 8
+              LoadBalancerSpec: slb.s3.large
+              NatGatewayBandwidth: 20
+              Engine: MySQL
+              EngineVersion: "5.7"
+          - Name: 自定义
+            Type: Custom
+            Parameters: {}
+  ServiceType: private
+  ServiceInfo:
+    Locale: zh-CN
+    ShortDescription: 
+    Image: '../resources/icons/{{ software }}_logo.png'
+    Name: {{ name }}
+  ShareType: Public
+Artifact:
+  {{ software }}Image:
+      ArtifactType: EcsImage
+      ArtifactName: {{ software }}EcsImage
+      Description: Ecs image for {{ software }}
+      ArtifactProperty:
+        RegionId: ${ImageBuilder.{{ software }}Image.RegionId}
+        ImageId: ${ImageBuilder.{{ software }}Image.SourceImageId}
+      SupportRegionIds:
+        - cn-hangzhou
+        - cn-shanghai
+        - cn-beijing
+        - cn-shenzhen
+        - cn-zhangjiakou
+        - cn-huhehaote
+        - cn-wulanchabu
+        - cn-nanjing
+        - cn-heyuan
+        - cn-guangzhou
+        - cn-fuzhou
+        - cn-wuhan-lr
+        - cn-chengdu
+        - cn-qingdao
+        - cn-hongkong
+        - ap-northeast-1
+        - ap-northeast-2
+        - ap-southeast-1
+        - ap-southeast-2
+        - ap-southeast-3
+        - ap-southeast-6
+        - ap-southeast-5
+        - ap-south-1
+        - ap-southeast-7
+        - us-east-1
+        - us-west-1
+        - eu-west-1
+        - me-east-1
+        - eu-central-1
+ImageBuilder:
+  {{ software }}Image:
+    RegionId: ap-southeast-1
+    SourceImageId: aliyun_3_9_x64_20G_alibase_20231219.vhd # for yitian, aliyun_3_9_arm64_20G_alibase_20231219.vhd
+    InstanceType: ecs.c6.large
+    CommandType: RunShellScript
+    Timeout: 600
+    CommandContent: |-
+      yum check-update --security
+      yum -y upgrade --security
+      {{ imageInitScript | indent(width=6) }}

@@ -1,0 +1,40 @@
+software: nodejs
+name: 应用运行环境-NodeJs
+imageInitScript: |-
+  #!/bin/bash
+  yum -y install git
+  cat>install_nvm.sh<<EOF
+  #!/bin/bash
+  git clone https://gitee.com/mirrors/nvm.git ~/.nvm && cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`
+  echo ". ~/.nvm/nvm.sh" >> ~/.bashrc
+  echo "export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node" >> ~/.bashrc
+  source ~/.bashrc
+  nvm install v20.12.2
+  EOF
+  bash install_nvm.sh
+
+  cat>~/node_example.js<<EOF
+  const http = require('http');
+  const hostname = '0.0.0.0';
+  const port = 80;
+  const server = http.createServer((req, res) => { 
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Hello World\n');
+  }); 
+
+  server.listen(port, hostname, () => { 
+      console.log(`Server running at http://${hostname}:${port}/`);
+  });
+  EOF
+  #nohup node ~/node_example.js &
+
+  cat>~/README<<EOF
+  此应用模板在root用户下部署了nvm和node.js v20.12.2版本
+  您可以使用nvm安装其他node.js版本:
+  nvm install 版本号
+
+  使用下面的命令测试node.js:
+  nohup node /root/node_example.js &
+  访问http://<IP地址>，应该返回Hello World
+  EOF

@@ -1,0 +1,19 @@
+software: java
+name: 应用运行环境-Java
+imageInitScript: |-
+  #!/bin/bash
+  yum install java-1.8.0-openjdk-devel -y
+  yum install java-11-openjdk-devel -y
+  yum install java-17-openjdk-devel -y
+
+  cat>~/README<<EOF
+  此应用模板部署了OpenJDK8、OpenJDK11、OpenJDK17三个长期支持版本
+  默认为Java版本为1.8版本：
+
+  查看所有Java版本：
+    alternatives --list | grep java
+  切换默认Java版本：
+    sudo alternatives --config java
+  切换默认Javac版本：
+    sudo alternatives --config javac
+  EOF

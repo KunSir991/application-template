@@ -1,0 +1,25 @@
+software: flask
+name: 应用运行环境-Flask
+imageInitScript: |-
+  #!/bin/bash
+  pip3 install flask
+  cat>~/flask_example.py<<EOF
+  from flask import Flask
+  app = Flask(__name__)
+
+  @app.route('/')
+  def hello_world():
+      return 'Hello World!'
+
+  if __name__ == '__main__':
+      app.run(host='0.0.0.0', port=80)
+  EOF
+  #nohup python3 ~/flask_example.py &
+
+  cat>~/README<<EOF
+  此应用模板基于Python3部署了Flask
+
+  验证Flask：
+    python3 /root/flask_example.py &
+  访问http://<IP地址>应返回Hello World
+  EOF

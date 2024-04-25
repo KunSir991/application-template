@@ -1,0 +1,66 @@
+software: lamp
+name: 应用运行环境-LAMP
+imageInitScript: |-
+  #!/bin/bash
+  dbname=test
+  dbuser=test
+  dbpassword=test
+  dbrootpassword=ApplicationManagement
+  export HOME=/root
+  export HOSTNAME=`hostname`
+
+  systemctl stop firewalld.service
+  systemctl disable firewalld.service
+  sed -i '/^SELINUX=/s/^/#/' /etc/selinux/config 
+  sed -i '1i SELINUX=disabled' /etc/selinux/config 
+  setenforce 0 
+
+  yum -y install httpd httpd-manual mod_ssl mod_perl
+  yum -y install php-cli php-fpm php-common php-mysqlnd php-gd php-mbstring php-mysqli
+  systemctl enable httpd
+  systemctl enable php-fpm.service
+
+  yum -y install compat-openssl10 mariadb mariadb-server 
+  # 默认不启动数据库。因为对于集群环境，每台机器启动数据库是没有意义的
+  cat>/root/setup_test_db.sh<<EOF
+  systemctl start mariadb.service 
+  mysqladmin -u root password "$dbrootpassword" 
+  mysql $dbname -u root --password="$dbrootpassword" >/dev/null 2>&1 </dev/null
+  echo CREATE DATABASE $dbname \; > /tmp/setup.mysql 
+  echo GRANT SELECT ON $dbname.* TO "$dbuser"@"localhost" IDENTIFIED BY "'$dbpassword'" \; >> /tmp/setup.mysql 
+  mysql -u root --password="$dbrootpassword" < /tmp/setup.mysql 
+  rm /tmp/setup.mysql
+  mysql $dbname -u root --password="$dbrootpassword" >/dev/null 2>&1 </dev/null
+  EOF
+
+  systemctl start php-fpm.service 
+  systemctl start httpd.service 
+
+  cat>/var/www/html/test.php<<EOF
+  <?php
+  phpinfo();
+  ?>
+  EOF
+
+  cat>/var/www/html/test_db.php<<EOF
+  <?php
+  \$conn=mysqli_connect("127.0.0.1", "$dbname", "$dbpassword");
+  if (\$conn){
+  echo "LAMP platform: connect to mysql successfully!";
+  mysqli_close(\$conn);
+  }else{
+  echo "LAMP platform: failed to connect to mysql!";
+  die('Connect Error (' . mysqli_connect_errno() . ') ' . mysqli_connect_error());
+  }
+  ?>
+  EOF
+
+  cat>~/README<<EOF
+  此应用模板部署了LAMP软件栈，即Linux/Apache/MariaDB(MySQL的开源替代)/PHP
+  默认不启动MariaDB
+
+  部署完成后，您可以访问http://<IP>/test.php来验证WEB服务器功能
+
+  如需测试数据库，可以运行/root/setup_test_db.sh后，访问http://<IP>/test_db.php看是否成功连接数据库
+  注意验证完成后应该将测试数据库（数据库名：test）删除，并修改数据库管理员密码
+  EOF

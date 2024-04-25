@@ -1,0 +1,247 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Description:
+  zh-cn: 部署单台ECS应用运行环境
+  en: deploy single ecs instance application runtime environment
+Parameters:
+  VpcId:
+    Type: String
+    Description:
+      zh-cn: 请选择已有的VPC<br><b><font color='blue'>如找不到VPC,请切换地域</font></b>
+      en: Please select the existing VPC. <br><b><font color='blue'>If you can't find the VPC, please switch Regions</font></b>
+    Label:
+      zh-cn: 现有VPC的实例ID
+      en: Existing VPC ID
+    AssociationProperty: ALIYUN::ECS::VPC::VPCId
+  VSwitchId:
+    Description:
+      zh-cn: 现有网络交换机的实例ID
+      en: The instance ID of an existing network switch.
+    Label:
+      zh-cn: 网络交换机ID
+      en: vSwitch ID
+    Type: String
+    AssociationProperty: ALIYUN::ECS::VSwitch::VSwitchId
+    AssociationPropertyMetadata:
+      VpcId: ${VpcId}
+      ZoneId: ${ZoneId}
+  ZoneId:
+    AssociationProperty: ALIYUN::ECS::Instance::ZoneId
+    Type: String
+    Description:
+      zh-cn: 可用区配置决定了新建ECS实例的可用区。此外，如果您选择已有基础资源配置，仅能选到该可用区下的交换机
+      en: Zone ID defines the Availability Zone for creating ECS instance. If you choose existing infrastructure configuration，you can only find the vSwitch under the availability zone
+    Label:
+      zh-cn: 可用区
+      en: Zone ID
+  SystemDiskCategory:
+    AssociationProperty: ALIYUN::ECS::Disk::SystemDiskCategory
+    AssociationPropertyMetadata:
+      InstanceType: ${EcsInstanceType}
+      ZoneId: ${ZoneId}
+      LocaleKey: DiskCategory
+    Type: String
+    Label:
+      zh-cn: 系统盘类型
+      en: System Disk Type
+    Default: cloud_essd
+  InstanceChargeType:
+    Default: PostPaid
+    Label:
+      zh-cn: ECS实例的付费模式
+      en: ECS instance pay type
+    Type: String
+    AllowedValues:
+      - PostPaid
+      - PrePaid
+    AssociationProperty: ChargeType
+    AssociationPropertyMetadata:
+      LocaleKey: InstanceChargeType
+  EcsPeriodUnit:
+    AssociationProperty: PayPeriodUnit
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Not:
+            Fn::Equals:
+              - ${InstanceChargeType}
+              - PostPaid
+    Default: Month
+    AllowedValues:
+      - Month
+    Label:
+      zh-cn: 云服务器预付费资源的购买周期
+      en: ECS Purchase cycle of prepaid resources
+    Type: String
+  EcsPeriod:
+    AssociationProperty: PayPeriod
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Not:
+            Fn::Equals:
+              - ${InstanceChargeType}
+              - PostPaid
+    Default: 1
+    Label:
+      zh-cn: 云服务器预付费资源的购买时长
+      en: ECS instance pay period
+    AllowedValues:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 12
+      - 24
+      - 36
+      - 48
+      - 60
+    Type: Number
+  EcsInstanceType:
+    Type: String
+    Label:
+      en: Instance Type
+      zh-cn: 实例类型
+    AssociationProperty: ALIYUN::ECS::Instance::InstanceType
+    AssociationPropertyMetadata:
+      ZoneId: ${ZoneId}
+      InstanceChargeType: ${InstanceChargeType}
+  SystemDiskSize:
+    Type: Number
+    Description:
+      zh-cn: 系统盘大小, 取值范围：[40, 500], 单位：GB
+      en: 'System disk size, range of values: 40-500, units: GB'
+    Label:
+      zh-cn: 系统盘空间
+      en: System disk space
+  InstancePassword:
+    ConstraintDescription:
+      zh-cn: 长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
+      en: Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+    Description:
+      zh-cn: 服务器登录密码,长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
+      en: Server login password, Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+    MinLength: 8
+    Label:
+      zh-cn: 实例密码
+      en: Instance password
+    AssociationProperty: ALIYUN::ECS::Instance::Password
+    NoEcho: true
+    MaxLength: 30
+    Type: String
+  InternetMaxBandwidthOut:
+    Type: Number
+    Description:
+      en: ECS internet max bandwidth out(0 stands for no public network access)
+      zh-cn: ECS最大出带宽 单位(MB)（设为0不开公网）
+    Label:
+      en: Internet max bandwidth out
+      zh-cn: 实例公网带宽
+    MinValue: 0
+    MaxValue: 200
+  InternetChargeType:
+    Type: String
+    Description:
+      en: ECS internet charge type
+      zh-cn: ECS流量付费类型
+    Label:
+      en: Internet charge type
+      zh-cn: 流量付费类型
+    Default: PayByTraffic
+    AllowedValues:
+      - PayByTraffic
+      - PayByBandwidth
+    AssociationPropertyMetadata:
+      ValueLabelMapping:
+        PayByTraffic: 按流量计费
+        PayByBandwidth: 按固定带宽计费
+Resources:
+  EcsSecurityGroup:
+    Type: ALIYUN::ECS::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - PortRange: 22/22
+          Priority: 1
+          SourceCidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+        - PortRange: 80/80
+          Priority: 1
+          SourceCidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+        - PortRange: 8080/8080
+          Priority: 1
+          SourceCidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+  EcsInstanceGroup:
+    Type: ALIYUN::ECS::InstanceGroup
+    Properties:
+      SystemDiskCategory:
+        Ref: SystemDiskCategory
+      VpcId:
+        Ref: VpcId
+      InstanceChargeType:
+        Ref: InstanceChargeType
+      SecurityGroupId:
+        Ref: EcsSecurityGroup
+      SystemDiskSize:
+        Ref: SystemDiskSize
+      ImageId: "ImageIdPlaceholder"
+      PeriodUnit:
+        Ref: EcsPeriodUnit
+      VSwitchId:
+        Ref: VSwitchId
+      Period:
+        Ref: EcsPeriod
+      Password:
+        Ref: InstancePassword
+      InstanceType:
+        Ref: EcsInstanceType
+      ZoneId:
+        Ref: ZoneId
+      MaxAmount: 1
+      InternetMaxBandwidthOut:
+        Ref: InternetMaxBandwidthOut
+      InternetChargeType:
+        Ref: InternetChargeType
+Mappings: {}
+Metadata:
+  ALIYUN::ROS::Interface:
+    ParameterGroups:
+      - Parameters:
+          - InstanceChargeType
+          - EcsPeriodUnit
+          - EcsPeriod
+        Label:
+          default:
+            en: PayType Configuration
+            zh-cn: 付费类型配置
+      - Parameters:
+          - EcsInstanceType
+          - InternetChargeType
+          - InternetMaxBandwidthOut
+          - SystemDiskCategory
+          - SystemDiskSize
+          - InstancePassword
+        Label:
+          default:
+            zh-cn: ECS 配置
+            en: ECS Configuration
+      - Parameters:
+          - ZoneId
+        Label:
+          default:
+            zh-cn: 可用区配置
+            en: Zone Configuration
+      - Parameters:
+          - VpcId
+          - VSwitchId
+        Label:
+          default:
+            zh-cn: 网络配置
+            en: Network configuration

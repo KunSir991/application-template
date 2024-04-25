@@ -1,0 +1,410 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Description:
+  zh-cn: 创建ECS实例，使用SLB做负载均衡，并把ECS放到伸缩组中
+  en: create ecs instances and use slb to load balancer.Add ECS to scalinggroups
+Parameters:
+  VpcId:
+    Type: String
+    Description:
+      zh-cn: '请选择已有的VPC<br><b><font color=''blue''>如找不到VPC,请切换地域</font></b>'
+      en: >-
+        Please select the existing VPC. <br><b><font color='blue'>If you can't
+        find the VPC, please switch Regions</font></b>
+    Label:
+      zh-cn: 现有VPC的实例ID
+      en: Existing VPC ID
+    AssociationProperty: 'ALIYUN::ECS::VPC::VPCId'
+  VSwitchId:
+    Description:
+      zh-cn: 现有网络交换机的实例ID
+      en: The instance ID of an existing network switch.
+    Label:
+      zh-cn: 网络交换机ID
+      en: vSwitch ID
+    Type: String
+    AssociationProperty: 'ALIYUN::ECS::VSwitch::VSwitchId'
+    AssociationPropertyMetadata:
+      VpcId: '${VpcId}'
+      ZoneId: '${ZoneId}'
+  LoadBalancerSpec:
+    Type: String
+    AssociationProperty: 'ALIYUN::SLB::Instance::InstanceType'
+    AssociationPropertyMetadata:
+      ZoneId: ZoneId
+    Description:
+      en: >-
+        Instance specifications</br>see detail：</b><a
+        href='https://www.alibabacloud.com/help/doc-detail/85939.html'
+        target='_blank'><b><font color='blue'>Performance Support
+        Type</b></font></a>
+      zh-cn: >-
+        实例规格</br>详见：</b><a
+        href='https://help.aliyun.com/document_detail/85939.html'
+        target='_blank'><b><font color='blue'>性能保障型</b></font></a>
+    Label:
+      en: Specifications
+      zh-cn: 规格
+  LoadBalancerEipBandwidth:
+    Label:
+      en: Load Balancer Eip Bandwidth
+      zh-cn: 负载均衡公网带宽
+    Description:
+      zh-cn: LoadBalancer绑定的EIP带宽。取值范围：1~200， 单位：Mbps。
+      en: 'EIP Bandwidth for Nat Gateway.Value range: [1,200], unit: Mbps.'
+    ConstraintDescription:
+      zh-cn: LoadBalancer绑定的EIP带宽绑定的EIP带宽。取值范围：1~200， 单位：Mbps。
+      en: 'EIP Bandwidth for Nat Gateway.Value range: [1,200], unit: Mbps.'
+    Type: Number
+    MinValue: 1
+  BackendServerPort:
+    Label:
+      en: BackendServicePort
+      zh-cn: 后端映射端口
+    Type: String
+    Default: 80
+  ZoneId:
+    AssociationProperty: 'ALIYUN::ECS::Instance::ZoneId'
+    Type: String
+    Description:
+      zh-cn: 可用区配置决定了新建ECS实例的可用区。此外，如果您选择已有基础资源配置，仅能选到该可用区下的交换机
+      en: >-
+        Zone ID defines the Availability Zone for creating ECS instance. If you
+        choose existing infrastructure configuration，you can only find the
+        vSwitch under the availability zone
+    Label:
+      zh-cn: 可用区
+      en: Zone ID
+  SystemDiskCategory:
+    AssociationProperty: 'ALIYUN::ECS::Disk::SystemDiskCategory'
+    AssociationPropertyMetadata:
+      InstanceType: EcsInstanceType
+      ZoneId: ZoneId
+      LocaleKey: DiskCategory
+    Type: String
+    Label:
+      zh-cn: 系统盘类型
+      en: System Disk Type
+    Default: cloud_essd
+  ChargeType:
+    Default: PostPaid
+    Label:
+      zh-cn: 付费模式
+      en: pay type
+    Type: String
+    AllowedValues:
+      - PostPaid
+      - PrePaid
+    AssociationProperty: ChargeType
+    AssociationPropertyMetadata:
+      LocaleKey: ChargeType
+  PeriodUnit:
+    AssociationProperty: PayPeriodUnit
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          'Fn::Not':
+            'Fn::Equals':
+              - '${ChargeType}'
+              - PostPaid
+    Default: Month
+    AllowedValues:
+      - Month
+    Label:
+      zh-cn: 购买资源时长周期
+      en: Pay Period Unit
+    Type: String
+  Period:
+    AssociationProperty: PayPeriod
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          'Fn::Not':
+            'Fn::Equals':
+              - '${ChargeType}'
+              - PostPaid
+    Default: 1
+    Label:
+      zh-cn: 云服务器预付费资源的购买时长
+      en: ECS instance pay period
+    AllowedValues:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 12
+      - 24
+      - 36
+      - 48
+      - 60
+    Type: Number
+  EcsInstanceType:
+    Type: String
+    Label:
+      en: Instance Type
+      zh-cn: 实例类型
+    AssociationProperty: 'ALIYUN::ECS::Instance::InstanceType'
+    AssociationPropertyMetadata:
+      ZoneId: '${ZoneId}'
+      InstanceChargeType: '${ChargeType}'
+    Default: ecs.g6.large
+  SystemDiskSize:
+    Type: Number
+    Description:
+      zh-cn: '系统盘大小, 取值范围：[40, 500], 单位：GB'
+      en: 'System disk size, range of values: 40-500, units: GB'
+    Label:
+      zh-cn: 系统盘空间
+      en: System disk space
+  InstancePassword:
+    ConstraintDescription:
+      zh-cn: '长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;''<>,.?/ 中的特殊符号）'
+      en: >-
+        Length 8-30, must contain three(Capital letters, lowercase letters,
+        numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+    Description:
+      zh-cn: >-
+        服务器登录密码,长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/
+        中的特殊符号）
+      en: >-
+        Server login password, Length 8-30, must contain three(Capital letters,
+        lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special
+        symbol in)
+    MinLength: 8
+    Label:
+      zh-cn: 实例密码
+      en: Instance password
+    AssociationProperty: 'ALIYUN::ECS::Instance::Password'
+    NoEcho: true
+    MaxLength: 30
+    Type: String
+  InstanceCount:
+    Type: Number
+    Description:
+      en: ECS Instance Count
+      zh-cn: ECS实例数量
+    Label:
+      en: Instance Count
+      zh-cn: 实例数量
+    Default: 1
+Resources:
+  EcsSecurityGroup:
+    Type: 'ALIYUN::ECS::SecurityGroup'
+    Properties:
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - PortRange: 22/22
+          Priority: 1
+          SourceCidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+        - PortRange: 80/80
+          Priority: 1
+          SourceCidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+        - PortRange: 8080/8080
+          Priority: 1
+          SourceCidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+  Slb:
+    Type: 'ALIYUN::SLB::LoadBalancer'
+    Properties:
+      VpcId:
+        Ref: VpcId
+      VSwitchId:
+        Ref: VSwitchId
+      PayType:
+        Ref: ChargeType
+      AddressType: internet
+      LoadBalancerSpec:
+        Ref: LoadBalancerSpec
+      PricingCycle:
+        Ref: PeriodUnit
+      Duration:
+        Ref: Period
+  SlbBackendServerAttachment:
+    DependsOn:
+      - EcsInstanceGroup
+    Type: 'ALIYUN::SLB::BackendServerAttachment'
+    Properties:
+      BackendServerList:
+        'Fn::GetAtt':
+          - EcsInstanceGroup
+          - InstanceIds
+      LoadBalancerId:
+        Ref: Slb
+  SlbListener:
+    DependsOn:
+      - Slb
+    Type: 'ALIYUN::SLB::Listener'
+    Properties:
+      Persistence:
+        CookieTimeout: 60
+        StickySession: 'on'
+        PersistenceTimeout: 180
+        XForwardedFor: 'off'
+        StickySessionType: insert
+      ListenerPort: 80
+      Bandwidth: -1
+      HealthCheck:
+        HttpCode: 'http_2xx,http_3xx,http_4xx,http_5xx'
+        HealthCheckType: http
+        HealthCheckMethod: get
+        UnhealthyThreshold: 3
+        Timeout: 5
+        HealthyThreshold: 3
+        Port:
+          Ref: BackendServerPort
+        URI: /
+        Interval: 2
+      LoadBalancerId:
+        Ref: Slb
+      BackendServerPort:
+        Ref: BackendServerPort
+      Protocol: http
+  EipSlb:
+    Type: 'ALIYUN::VPC::EIP'
+    Properties:
+      InternetChargeType: PayByTraffic
+      Bandwidth:
+        Ref: LoadBalancerEipBandwidth
+  EipSlbAssociation:
+    Type: 'ALIYUN::VPC::EIPAssociation'
+    Properties:
+      InstanceId:
+        Ref: Slb
+      AllocationId:
+        Ref: EipSlb
+  EcsInstanceGroup:
+    Type: 'ALIYUN::ECS::InstanceGroup'
+    Properties:
+      SystemDiskCategory:
+        Ref: SystemDiskCategory
+      VpcId:
+        Ref: VpcId
+      InstanceChargeType:
+        Ref: ChargeType
+      SecurityGroupId:
+        Ref: EcsSecurityGroup
+      SystemDiskSize:
+        Ref: SystemDiskSize
+      ImageId: "ImageIdPlaceholder"
+      PeriodUnit:
+        Ref: PeriodUnit
+      VSwitchId:
+        Ref: VSwitchId
+      Period:
+        Ref: Period
+      Password:
+        Ref: InstancePassword
+      InstanceType:
+        Ref: EcsInstanceType
+      ZoneId:
+        Ref: ZoneId
+      MaxAmount:
+        Ref: InstanceCount
+      AllocatePublicIP: false
+  EssInstanceScalingGroupEnable:
+    Type: 'ALIYUN::ESS::ScalingGroupEnable'
+    Properties:
+      ScalingRuleArisExecuteVersion: '1'
+      ScalingConfigurationId:
+        Ref: EcsInstanceScalingConfiguration
+      InstanceIds:
+        'Fn::GetAtt':
+          - EcsInstanceGroup
+          - InstanceIds
+      ScalingGroupId:
+        Ref: EssInstanceScalingGroup
+    DependsOn:
+      - EcsInstanceScalingConfiguration
+      - EssInstanceScalingGroup
+  EcsInstanceScalingConfiguration:
+    Type: 'ALIYUN::ESS::ScalingConfiguration'
+    Properties:
+      UserData: null
+      SystemDiskCategory:
+        Ref: SystemDiskCategory
+      SecurityGroupId:
+        Ref: EcsSecurityGroup
+      SystemDiskSize:
+        Ref: SystemDiskSize
+      ImageId: "ImageIdPlaceholder" 
+      ScalingGroupId:
+        Ref: EssInstanceScalingGroup
+      InstanceType:
+        Ref: EcsInstanceType
+      Password:
+        Ref: InstancePassword
+  EssInstanceScalingGroup:
+    Type: 'ALIYUN::ESS::ScalingGroup'
+    Properties:
+      RemovalPolicys:
+        - NewestInstance
+      MinSize:
+        Ref: InstanceCount
+      MaxSize: 50
+      VSwitchId:
+        Ref: VSwitchId
+      LoadBalancerIds:
+        - Ref: SlbListener
+      DefaultCooldown: 300
+Outputs:
+  EipSlbAddress:
+    Description:
+      en: Accessing public IP Addresses
+      zh-cn: 访问公网IP
+    Value:
+      'Fn::Sub':
+        - 'http://${ServerAddress}'
+        - ServerAddress:
+            'Fn::GetAtt':
+              - EipSlb
+              - EipAddress
+Mappings: {}
+Metadata:
+  'ALIYUN::ROS::Interface':
+    ParameterGroups:
+      - Parameters:
+          - ChargeType
+          - PeriodUnit
+          - Period
+        Label:
+          default:
+            en: PayType Configuration
+            zh-cn: 付费类型配置
+      - Parameters:
+          - EcsInstanceType
+          - SystemDiskCategory
+          - SystemDiskSize
+          - InstancePassword
+          - InstanceCount
+        Label:
+          default:
+            zh-cn: ECS 配置
+            en: ECS Configuration
+      - Parameters:
+          - LoadBalancerSpec
+          - LoadBalancerEipBandwidth
+          - BackendServerPort
+        Label:
+          default:
+            zh-cn: SLB配置
+            en: SLB Configuration
+      - Parameters:
+          - ZoneId
+        Label:
+          default:
+            zh-cn: 可用区配置
+            en: Zone Configuration
+      - Parameters:
+          - VpcId
+          - VSwitchId
+        Label:
+          default:
+            zh-cn: 网络配置
+            en: Network configuration
