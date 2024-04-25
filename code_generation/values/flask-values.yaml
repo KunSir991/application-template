@@ -1,5 +1,6 @@
 software: flask
 name: 应用运行环境-Flask
+baseImage: aliyun_3_9_x64_20G_alibase_20231219.vhd # 使用有效的公共模板作为占位符
 imageInitScript: |-
   #!/bin/bash
   pip3 install flask

@@ -191,7 +191,7 @@ Resources:
         Ref: EcsSecurityGroup
       SystemDiskSize:
         Ref: SystemDiskSize
-      ImageId: "ImageIdPlaceholder"
+      ImageId: "{{ baseImage }}"
       PeriodUnit:
         Ref: EcsPeriodUnit
       VSwitchId:

@@ -6,7 +6,7 @@ Service:
       Prefix: {{ software }}
     SupplierDeployMetadata:
       ArtifactRelation:
-        'ImageIdPlaceholder':
+        '{{ baseImage }}':
           ArtifactId: ${Artifact.{{ software }}Image.ArtifactId}
           ArtifactVersion: ${Artifact.{{ software }}Image.ArtifactVersion}
       SupplierTemplateConfigs:
@@ -293,7 +293,7 @@ Artifact:
 ImageBuilder:
   {{ software }}Image:
     RegionId: ap-southeast-1
-    SourceImageId: aliyun_3_9_x64_20G_alibase_20231219.vhd # for yitian, aliyun_3_9_arm64_20G_alibase_20231219.vhd
+    SourceImageId: {{ baseImage }}
     InstanceType: ecs.c6.large
     InternetMaxBandwidthOut: 10
     CommandType: RunShellScript

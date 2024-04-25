@@ -292,7 +292,7 @@ Resources:
         Ref: EcsSecurityGroup
       SystemDiskSize:
         Ref: SystemDiskSize
-      ImageId: "ImageIdPlaceholder"
+      ImageId: "{{ baseImage }}"
       PeriodUnit:
         Ref: PeriodUnit
       VSwitchId:
@@ -333,7 +333,7 @@ Resources:
         Ref: EcsSecurityGroup
       SystemDiskSize:
         Ref: SystemDiskSize
-      ImageId: "ImageIdPlaceholder" 
+      ImageId: "{{ baseImage }}" 
       ScalingGroupId:
         Ref: EssInstanceScalingGroup
       InstanceType:
