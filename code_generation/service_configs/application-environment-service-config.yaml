@@ -295,6 +295,7 @@ ImageBuilder:
     RegionId: ap-southeast-1
     SourceImageId: aliyun_3_9_x64_20G_alibase_20231219.vhd # for yitian, aliyun_3_9_arm64_20G_alibase_20231219.vhd
     InstanceType: ecs.c6.large
+    InternetMaxBandwidthOut: 10
     CommandType: RunShellScript
     Timeout: 600
     CommandContent: |-
