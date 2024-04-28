@@ -5,12 +5,24 @@
 LNMP应用运行环境是在Alibaba Cloud Linux
 3基础上Nginx/MariaDB（MySQL开源替代）/PHP软件栈并配置系统服务。默认不启动数据库服务。支持选择ECS单机、弹性ECS集群等多种部署架构，集群均支持弹性伸缩。
 
-## 前提条件
+## 计费说明
 
-当您的账号是RAM账号时，需要对部分阿里云资源进行访问和创建操作。因此您的账号需要包含如下资源的权限。
+计算巢服务本身免费，但部署过程中创建资源时会产生费用。资源和云服务费用和您设定的资源规格和计费方式有关。
+预估费用和明细在创建实例-确认订单步骤可以看到。
+<img src="7.jpg" width="1000" align="bottom"/>
+
+## 部署架构
+
+### ECS单机
+
+#### 架构图
+
+<img src="1.jpg" width="800" align="bottom"/>
+
+#### 权限
 
 | 权限策略名称                          | 备注                         |
-  |---------------------------------|----------------------------|
+|---------------------------------|----------------------------|
 | AliyunECSFullAccess             | 管理云服务器服务（ECS）的权限           |
 | AliyunVPCFullAccess             | 管理专有网络（VPC）的权限             |
 | AliyunROSFullAccess             | 管理资源编排服务（ROS）的权限           |
@@ -18,13 +30,7 @@ LNMP应用运行环境是在Alibaba Cloud Linux
 | AliyunESSFullAccess             | 管理弹性伸缩服务（ESS）的权限           |
 | AliyunRDSFullAccess             | 管理云数据库服务（RDS）的权限           |
 
-## 部署架构
-
-### ECS单机
-
-<img src="1.jpg" width="800" align="bottom"/>
-
-参数详情：
+#### 参数
 
 | 参数组   | 参数项        | 示例           | 说明              |
 |-------|------------|--------------|-----------------|
@@ -41,9 +47,20 @@ LNMP应用运行环境是在Alibaba Cloud Linux
 
 ### 弹性ECS集群
 
+#### 架构图
+
 <img src="2.jpg" width="800" align="bottom"/>
 
-参数详情：
+#### 权限
+
+| 权限策略名称                          | 备注                         |
+|---------------------------------|----------------------------|
+| AliyunECSFullAccess             | 管理云服务器服务（ECS）的权限           |
+| AliyunVPCFullAccess             | 管理专有网络（VPC）的权限             |
+| AliyunROSFullAccess             | 管理资源编排服务（ROS）的权限           |
+| AliyunComputeNestUserFullAccess | 管理计算巢服务（ComputeNest）的用户侧权限 |
+
+#### 参数
 
 | 参数组   | 参数项        | 示例           | 说明              |
 |-------|------------|--------------|-----------------|
@@ -59,9 +76,22 @@ LNMP应用运行环境是在Alibaba Cloud Linux
 
 ### 弹性Web后端环境
 
+#### 架构图
+
 <img src="3.jpg" width="800" align="bottom"/>
 
-参数详情：
+#### 权限
+
+| 权限策略名称                          | 备注                         |
+|---------------------------------|----------------------------|
+| AliyunECSFullAccess             | 管理云服务器服务（ECS）的权限           |
+| AliyunVPCFullAccess             | 管理专有网络（VPC）的权限             |
+| AliyunROSFullAccess             | 管理资源编排服务（ROS）的权限           |
+| AliyunComputeNestUserFullAccess | 管理计算巢服务（ComputeNest）的用户侧权限 |
+| AliyunESSFullAccess             | 管理弹性伸缩服务（ESS）的权限           |
+| AliyunSLBFullAccess             | 管理负载均衡服务（SLB）的权限           |
+
+#### 参数
 
 | 参数组   | 参数项        | 示例           | 说明                  |
 |-------|------------|--------------|---------------------|
@@ -79,9 +109,23 @@ LNMP应用运行环境是在Alibaba Cloud Linux
 
 ### 钉钉推荐架构
 
+#### 架构图
+
 <img src="4.jpg" width="800" align="bottom"/>
 
-参数详情：
+#### 权限
+
+| 权限策略名称                          | 备注                         |
+|---------------------------------|----------------------------|
+| AliyunECSFullAccess             | 管理云服务器服务（ECS）的权限           |
+| AliyunVPCFullAccess             | 管理专有网络（VPC）的权限             |
+| AliyunROSFullAccess             | 管理资源编排服务（ROS）的权限           |
+| AliyunComputeNestUserFullAccess | 管理计算巢服务（ComputeNest）的用户侧权限 |
+| AliyunESSFullAccess             | 管理弹性伸缩服务（ESS）的权限           |
+| AliyunSLBFullAccess             | 管理负载均衡服务（SLB）的权限           |
+| AliyunRDSFullAccess             | 管理云数据库服务（RDS）的权限           |
+
+#### 参数
 
 | 参数组   | 参数项        | 示例          | 说明                           |
 |-------|------------|-------------|------------------------------|
